@@ -25,7 +25,7 @@ bool LRUCache::put(PointerWrapper<AudioTrack> track) {
         return false;
     }
 
-    int track_slot = findSlot(track);
+    int track_slot = findSlot(track->get_title());
 
     if(track_slot != max_size) {
         slots[track_slot].access(++access_counter);
@@ -38,11 +38,10 @@ bool LRUCache::put(PointerWrapper<AudioTrack> track) {
         evicted = true;
     }
 
-    CacheSlot cache_slot = new CacheSlot();
+    CacheSlot* cache_slot = new CacheSlot();
+    cache_slot->store(std::move(track), ++access_counter);
 
-
-    // TODO: WE NEED ZE FIX NODER
-    slots[findEmptySlot()] = cache_slot.store(track, ++access_counter);
+    slots[findEmptySlot()] = std::move(*cache_slot);
 
     return evicted;
 }
