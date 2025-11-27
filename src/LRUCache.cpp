@@ -27,21 +27,20 @@ bool LRUCache::put(PointerWrapper<AudioTrack> track) {
 
     int track_slot = findSlot(track->get_title());
 
+    // If track was found we just want to update the access time and not the add (we want a unique title)
     if(track_slot != max_size) {
         slots[track_slot].access(++access_counter);
         return evicted;
     }
 
-    // If cache full we evict to empty a slot
+    // If cache is full we evict to empty a slot
     if(size() == max_size) {
         evictLRU();
         evicted = true;
     }
-
-    CacheSlot* cache_slot = new CacheSlot();
-    cache_slot->store(std::move(track), ++access_counter);
-
-    slots[findEmptySlot()] = std::move(*cache_slot);
+    
+    CacheSlot empty_slot = std::move(slots[findEmptySlot()]);
+    empty_slot.store(std::move(track), ++access_counter);
 
     return evicted;
 }
