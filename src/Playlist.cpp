@@ -19,13 +19,14 @@ Playlist::~Playlist() {
     
     while(current) {
         next_to_delete = current->next;
+        delete current->track;
         delete current;
         current = next_to_delete;
     }
 
     // Good convention to insure head is null after we delete the Playlist
     head = nullptr;
-
+    
 }
 
 void Playlist::add_track(AudioTrack* track) {
@@ -64,6 +65,7 @@ void Playlist::remove_track(const std::string& title) {
             head = current->next;
         }
         
+        delete current->track;
         delete current;
 
         track_count--;
