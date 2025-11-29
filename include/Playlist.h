@@ -29,11 +29,23 @@ private:
     std::string playlist_name;
     int track_count;
 
+
+    // deletes all nodes in the playlist
+    void clear();
+    // Deep copy fields from other
+    void clone_nodes_from_other(const Playlist& other);
+
 public:
     /**
      * Constructor
      */
     Playlist(const std::string& name="");
+
+    // Copy constructor
+    Playlist(const Playlist& other);
+
+    // Copy assignment
+    Playlist& operator=(const Playlist& other);
 
     /**
      * Destructor

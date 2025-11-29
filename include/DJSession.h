@@ -52,6 +52,9 @@ private:
         size_t errors = 0;
     } stats;
 
+    void reset_stats();
+    void play_playlist(const std::string& playlist_name);
+
 public:
     // ========== CONSTRUCTORS & DESTRUCTOR ==========
 

@@ -72,8 +72,24 @@ bool DJSession::load_playlist(const std::string& playlist_name)  {
 
  */
 int DJSession::load_track_to_controller(const std::string& track_name) {
-    // Your implementation here
-    return 0; // Placeholder
+    auto track_to_load = library_service.findTrack(track_name);
+    if (!track_to_load){
+        std::cerr << "[ERROR] Track: \"" << track_name << "\" not found in library\n";
+        stats.errors++;
+        return 0;
+    }
+
+    std::cout << "[System] Loading track ’" << track_name << "’ to controller...\n";
+    int cache_status = controller_service.loadTrackToCache(*track_to_load);
+    
+    // Cache HIT
+    if(cache_status == 1) { stats.cache_hits++; }
+    // Cache MISS with/without EVICTION
+    if(cache_status < 1) { stats.cache_misses++; }
+    // Cache EVICTION
+    if(cache_status == -1) { stats.cache_evictions++; }
+    
+    return cache_status; 
 }
 
 /**
@@ -84,8 +100,31 @@ int DJSession::load_track_to_controller(const std::string& track_name) {
  */
 bool DJSession::load_track_to_mixer_deck(const std::string& track_title) {
     std::cout << "[System] Delegating track transfer to MixingEngineService for: " << track_title << std::endl;
-    // your implementation here
-    return false; // Placeholder
+    
+    AudioTrack* track = controller_service.getTrackFromCache(track_title);
+
+    if (!track){
+        std::cerr << "[ERROR] Track: \"" << track_title << "\" not found in cache\n";
+        stats.errors++;
+        return false;
+    }
+
+    int deck_load_status = mixing_service.loadTrackToDeck(*track);
+
+    // Deck loading error
+    if(deck_load_status == -1) {
+        stats.errors++; 
+        return false;
+    }
+
+    // Deck A loaded 
+    if(deck_load_status == 0) { stats.deck_loads_a++; }
+    // Deck B loaded
+    if(deck_load_status == 1) { stats.deck_loads_b++;  }
+    
+    stats.transitions++;
+
+    return true;
 }
 
 /**
@@ -117,7 +156,31 @@ void DJSession::simulate_dj_performance() {
     std::cout << "\n--- Processing Tracks ---" << std::endl;
 
     std::cout << "TODO: Implement the DJ performance simulation workflow here." << std::endl;
-    // Your implementation here
+    
+    if(play_all){
+        std::vector<std::string> playlist_names;
+        for (const auto& pair : session_config.playlists) {
+            playlist_names.push_back(pair.first);
+        }
+        std::sort(playlist_names.begin(), playlist_names.end());
+        for(auto playlist : playlist_names){
+            play_playlist(playlist);
+            print_session_summary();
+            reset_stats();
+        }
+            
+    } else { // Interactive mode
+        while(true) {
+            std::string selected_playlist = display_playlist_menu_from_config();
+
+            if(selected_playlist.empty()) { break; }
+            play_playlist(selected_playlist);
+            print_session_summary();
+            reset_stats();
+        }  
+    }
+
+    std::cout << "Session cancelled by user or all playlists played.";
 }
 
 
@@ -192,6 +255,36 @@ std::string DJSession::display_playlist_menu_from_config() {
         std::cout << "Invalid selection. Please enter a number between 1 and " 
                   << playlist_names.size() << ", or 0 to cancel." << std::endl;
     }
+}
+
+void DJSession::play_playlist(const std::string& playlist_name) {
+    
+    bool is_playlist_loaded = load_playlist(playlist_name);
+
+    if(!is_playlist_loaded) {
+        std::cerr << "[ERROR] playlist: \"" << playlist_name << "\" not able to load\n";
+        return;
+    }
+    
+    for(auto track : track_titles){
+        std::clog << "\n–- Processing: \"" << track << "\" –-\n"; 
+        stats.tracks_processed++;
+        load_track_to_controller(track);
+        if(!load_track_to_mixer_deck(track)){
+            continue;
+        }
+    }
+}
+
+void DJSession::reset_stats() {
+    stats.tracks_processed = 0;
+    stats.cache_hits = 0;
+    stats.cache_misses = 0;
+    stats.cache_evictions = 0;
+    stats.deck_loads_a = 0;
+    stats.deck_loads_b = 0;
+    stats.transitions = 0;
+    stats.errors = 0;
 }
 
 void DJSession::print_session_summary() const {

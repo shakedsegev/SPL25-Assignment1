@@ -36,9 +36,7 @@ void WAVTrack::analyze_beatgrid() {
 
 double WAVTrack::get_quality_score() const {
 
-    const float MAX_SCORE = 100.0;
     const float BASE_SCORE = 70.0;
-    const float MIN_SCORE = 0.0;
     const int CD_SAMPLE_RATE = 44100;
     const int HIGH_RES_SAMPLE_RATE = 96000;
     const int CD_BITDEPTH = 16;
