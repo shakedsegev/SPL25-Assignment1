@@ -107,14 +107,14 @@ void DJLibraryService::loadPlaylistFromIndices(const std::string& playlist_name,
     std::cout << "[INFO] Loading playlist:  " << playlist_name << "\n";
     Playlist* playlist = new Playlist(playlist_name);
     for (int index : track_indices){
-        if (index > library.size()){
+        if (index > (int) library.size()){
             std::cout << "WARNING] Invalid track index:  " << index << "\n";
             continue;
         }
         PointerWrapper<AudioTrack> cloned_track = library[index-1]->clone();
         std::string title = library[index-1]->get_title();
 
-        if(!clone) {
+        if(!cloned_track) {
             std::cerr << "[ERROR] Track:  " << title  << " failed to clone in DJLibraryService::loadPlaylistFromIndices";
             continue;
         }

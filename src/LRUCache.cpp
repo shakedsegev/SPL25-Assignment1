@@ -28,7 +28,7 @@ bool LRUCache::put(PointerWrapper<AudioTrack> track) {
     int track_slot = findSlot(track->get_title());
 
     // If track was found we just want to update the access time and not the add (we want a unique title)
-    if(track_slot != max_size) {
+    if(track_slot != (int) max_size) {
         slots[track_slot].access(++access_counter);
         return evicted;
     }

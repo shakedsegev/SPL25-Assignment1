@@ -17,6 +17,8 @@ private:
     int bpm_tolerance;
 public:
     MixingEngineService();
+    MixingEngineService(const MixingEngineService& other);
+    MixingEngineService& operator=(const MixingEngineService& other);
     ~MixingEngineService();
 
     /** Contract: Load a track to the next deck per instant-transition policy
