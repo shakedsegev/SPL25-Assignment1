@@ -44,7 +44,7 @@ MixingEngineService& MixingEngineService::operator=(const MixingEngineService& o
  */
 MixingEngineService::~MixingEngineService() {
 
-    std::cout << "[MixingEngineService] Cleaning up decks.... \n";
+    std::cout << "[MixingEngineService] Cleaning up decks... \n";
     for (AudioTrack* deck : decks){
         delete deck;
         deck = nullptr;
@@ -67,16 +67,31 @@ int MixingEngineService::loadTrackToDeck(const AudioTrack& track) {
         return -1;
     }
 
-    cloned_track->analyze_beatgrid();
-    cloned_track->load();
-
+    // First deck load case
     if(!decks[0] && !decks[1]){
+
+        std::cout << "[Deck Switch] Target deck: 0\n";
+
         decks[0] = cloned_track.release();
+
+        decks[0]->load();
+        decks[0]->analyze_beatgrid();
+
+        std::cout << "[Load Complete] '" << decks[0]->get_title() << "' is now loaded on deck 0\n";
+
+        active_deck = 0;
+
+        std::cout << "[Active Deck] Switched to deck " << active_deck << "\n";
+        
         return 0;
     }
 
     size_t target_deck = 1 - active_deck;
     std::cout << "[Deck Switch] Target deck: "<< target_deck <<"\n";
+
+    cloned_track->load();
+    cloned_track->analyze_beatgrid();
+
     if (decks[target_deck]){
         delete decks[target_deck];
         decks[target_deck] = nullptr;
@@ -87,7 +102,7 @@ int MixingEngineService::loadTrackToDeck(const AudioTrack& track) {
     }
 
     decks[target_deck] = cloned_track.release();
-    std::cout << "[Load Complete] ’" << decks[target_deck]->get_title() << "’ is now loaded on deck "<< target_deck <<"\n"; 
+    std::cout << "[Load Complete] '" << decks[target_deck]->get_title() << "' is now loaded on deck "<< target_deck <<"\n"; 
     std::cout << "[Unload] Unloading previous deck " << active_deck << " (" << decks[active_deck]->get_title() <<")\n";
     delete decks[active_deck];
     decks[active_deck] = nullptr;
@@ -151,4 +166,6 @@ void MixingEngineService::sync_bpm(const PointerWrapper<AudioTrack>& track) cons
     int original_bpm = track->get_bpm();
     int average_bpm = (original_bpm + decks[active_deck]->get_bpm()) / 2 ;
     track->set_bpm(average_bpm);
+
+    std::cout << "[Sync BPM] Syncing BPM from " << original_bpm << " to " << average_bpm << std::endl;
 }

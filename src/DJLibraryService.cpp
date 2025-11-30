@@ -45,7 +45,6 @@ DJLibraryService& DJLibraryService::operator=(const DJLibraryService& other){
  */
 void DJLibraryService::buildLibrary(const std::vector<SessionConfig::TrackInfo>& library_tracks) {
     
-    std::cout << "TODO: Implement DJLibraryService::buildLibrary method\n"<< library_tracks.size() << " tracks to be loaded into library.\n";
     for (auto info : library_tracks){
         AudioTrack* new_track;
         if (info.type == "MP3"){
@@ -56,11 +55,11 @@ void DJLibraryService::buildLibrary(const std::vector<SessionConfig::TrackInfo>&
             new_track = new WAVTrack(info.title,info.artists,info.duration_seconds,info.bpm,info.extra_param1,info.extra_param2);
             std::cout << "WAVTrack created:  "<< info.extra_param1 << "Hz/" << info.extra_param2 << "bit\n" ;
         }
-        library.push_back(std::move(new_track));
+        library.push_back(new_track);
         
     }
 
-    std::cout << "[INFO] Track library built:  "<< library.size() << " tracks loaded\n" ;
+    std::cout << "[INFO] Track library built: "<< library.size() << " tracks loaded\n" ;
 }
 
 /**
@@ -104,11 +103,13 @@ AudioTrack* DJLibraryService::findTrack(const std::string& track_title) {
 
 void DJLibraryService::loadPlaylistFromIndices(const std::string& playlist_name, 
                                                const std::vector<int>& track_indices) {
-    std::cout << "[INFO] Loading playlist:  " << playlist_name << "\n";
-    Playlist* playlist = new Playlist(playlist_name);
+    std::cout << "[INFO] Loading playlist: " << playlist_name << "\n";
+    Playlist new_playlist(playlist_name);
+    playlist = new_playlist;
+    
     for (int index : track_indices){
-        if (index > (int) library.size()){
-            std::cout << "WARNING] Invalid track index:  " << index << "\n";
+        if (index <= 0 || index > (int) library.size()){
+            std::cout << "[WARNING] Invalid track index: " << index << "\n";
             continue;
         }
         PointerWrapper<AudioTrack> cloned_track = library[index-1]->clone();
@@ -122,10 +123,11 @@ void DJLibraryService::loadPlaylistFromIndices(const std::string& playlist_name,
         cloned_track->load();
         cloned_track->analyze_beatgrid();
 
-        playlist->add_track(cloned_track.release());
+        playlist.add_track(cloned_track.release());
+
         std::cout << "Added "<< title << " to playlist  " << playlist_name << "\n";
     }
-    std::cout << "[INFO] Playlist loaded: "<< playlist_name << " (" << playlist->get_track_count() << " tracks)\n";
+    std::cout << "[INFO] Playlist loaded: "<< playlist_name << " (" << playlist.get_track_count() << " tracks)\n";
     
 }
 

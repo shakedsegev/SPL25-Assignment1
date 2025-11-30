@@ -79,8 +79,10 @@ int DJSession::load_track_to_controller(const std::string& track_name) {
         return 0;
     }
 
-    std::cout << "[System] Loading track ’" << track_name << "’ to controller...\n";
+    std::cout << "[System] Loading track '" << track_name << "' to controller...\n";
     int cache_status = controller_service.loadTrackToCache(*track_to_load);
+
+    controller_service.displayCacheStatus();
     
     // Cache HIT
     if(cache_status == 1) { stats.cache_hits++; }
@@ -110,6 +112,8 @@ bool DJSession::load_track_to_mixer_deck(const std::string& track_title) {
     }
 
     int deck_load_status = mixing_service.loadTrackToDeck(*track);
+
+    mixing_service.displayDeckStatus();
 
     // Deck loading error
     if(deck_load_status == -1) {
@@ -154,8 +158,6 @@ void DJSession::simulate_dj_performance() {
     std::cout << "Auto Sync: " << (session_config.auto_sync ? "enabled" : "disabled") << std::endl;
     std::cout << "Cache Capacity: " << session_config.controller_cache_size << " slots (LRU policy)" << std::endl;
     std::cout << "\n--- Processing Tracks ---" << std::endl;
-
-    std::cout << "TODO: Implement the DJ performance simulation workflow here." << std::endl;
     
     if(play_all){
         std::vector<std::string> playlist_names;
@@ -166,7 +168,7 @@ void DJSession::simulate_dj_performance() {
         for(auto playlist : playlist_names){
             play_playlist(playlist);
             print_session_summary();
-            reset_stats();
+            // reset_stats();
         }
             
     } else { // Interactive mode
@@ -176,11 +178,11 @@ void DJSession::simulate_dj_performance() {
             if(selected_playlist.empty()) { break; }
             play_playlist(selected_playlist);
             print_session_summary();
-            reset_stats();
+            // reset_stats();
         }  
     }
 
-    std::cout << "Session cancelled by user or all playlists played.";
+    std::cout << "Session cancelled by user or all playlists played.\n";
 }
 
 
@@ -267,7 +269,7 @@ void DJSession::play_playlist(const std::string& playlist_name) {
     }
     
     for(auto track : track_titles){
-        std::clog << "\n–- Processing: \"" << track << "\" –-\n"; 
+        std::clog << "\n--- Processing: " << track << " ---\n"; 
         stats.tracks_processed++;
         load_track_to_controller(track);
         if(!load_track_to_mixer_deck(track)){
