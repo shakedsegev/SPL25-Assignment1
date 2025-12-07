@@ -49,11 +49,11 @@ void DJLibraryService::buildLibrary(const std::vector<SessionConfig::TrackInfo>&
         AudioTrack* new_track;
         if (info.type == "MP3"){
             new_track = new MP3Track(info.title,info.artists,info.duration_seconds,info.bpm,info.extra_param1,info.extra_param2);
-            std::cout << "MP3Track created:  "<< info.extra_param1 << "kbps.\n";
+            // std::cout << "MP3Track created:  "<< info.extra_param1 << "kbps.\n";
         }
         else {
             new_track = new WAVTrack(info.title,info.artists,info.duration_seconds,info.bpm,info.extra_param1,info.extra_param2);
-            std::cout << "WAVTrack created:  "<< info.extra_param1 << "Hz/" << info.extra_param2 << "bit\n" ;
+            // std::cout << "WAVTrack created:  "<< info.extra_param1 << "Hz/" << info.extra_param2 << "bit\n" ;
         }
         library.push_back(new_track);
         
@@ -125,7 +125,7 @@ void DJLibraryService::loadPlaylistFromIndices(const std::string& playlist_name,
 
         playlist.add_track(cloned_track.release());
 
-        std::cout << "Added "<< title << " to playlist  " << playlist_name << "\n";
+        // std::cout << "Added "<< title << " to playlist  " << playlist_name << "\n";
     }
     std::cout << "[INFO] Playlist loaded: "<< playlist_name << " (" << playlist.get_track_count() << " tracks)\n";
     

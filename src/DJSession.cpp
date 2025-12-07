@@ -46,6 +46,7 @@ bool DJSession::load_playlist(const std::string& playlist_name)  {
     }
     
     track_titles = library_service.getTrackTitles();
+    std::reverse(track_titles.begin(), track_titles.end());
     return true;
 }
 
@@ -164,7 +165,10 @@ void DJSession::simulate_dj_performance() {
         for (const auto& pair : session_config.playlists) {
             playlist_names.push_back(pair.first);
         }
-        std::sort(playlist_names.begin(), playlist_names.end());
+
+        // std::sort(playlist_names.begin(), playlist_names.end());
+        // std::reverse(playlist_names.begin(), playlist_names.end());
+
         for(auto playlist : playlist_names){
             play_playlist(playlist);
             print_session_summary();
