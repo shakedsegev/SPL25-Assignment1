@@ -273,6 +273,9 @@ void DJSession::play_playlist(const std::string& playlist_name) {
     }
     
     for(auto track : track_titles){
+        
+        // Flush the output stream to prevent log messages printing in the wrong time
+        std::cout << std::flush;
         std::clog << "\n--- Processing: " << track << " ---\n"; 
         stats.tracks_processed++;
         load_track_to_controller(track);
